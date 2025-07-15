@@ -43,6 +43,8 @@ public:
     const Elf32Header& getHeader() const;
     const std::vector<Elf32SectionHeader>& getSectionHeaders() const;
     std::vector<uint8_t> getSectionData(const std::string& section_name) const;
+    uint32_t getSectionAddr(const std::string& section_name) const;
+    uint32_t getSymbolAddr(const std::string& symbol_name) const;
     std::string getError() const;
 
 private:

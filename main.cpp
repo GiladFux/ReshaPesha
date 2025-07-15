@@ -1,4 +1,5 @@
 #include "elf_parser.hpp"
+#include "disassembler.hpp"
 #include <iostream>
 #include <iomanip>
 
@@ -11,19 +12,25 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    std::vector<uint8_t> text_section = parser.getSectionData(".text");
+    std::vector<unsigned char> text_section = parser.getSectionData(".text");
     if (text_section.empty()) {
         std::cerr << "Could not find .text section" << std::endl;
         return 1;
     }
 
-    std::cout << ".text section contents (hex):" << std::endl;
-    for (size_t i = 0; i < text_section.size(); ++i) {
-        std::cout << std::hex << std::setw(2) << std::setfill('0')
-                  << static_cast<int>(text_section[i]) << " ";
-        if ((i + 1) % 16 == 0) std::cout << std::endl;
+    uint32_t text_addr = parser.getSectionAddr(".text");
+    uint32_t main_addr = parser.getSymbolAddr("main");
+
+    auto instructions = disassemble_x86(text_section, text_addr);
+
+    std::cout << "Disassembly (.text section):" << std::endl;
+    for (const auto& instr : instructions) {
+        if (instr.address == main_addr) {
+            std::cout << ">>> MAIN FUNCTION START <<<" << std::endl;
+        }
+        std::cout << std::hex << instr.address << ": "
+                  << instr.mnemonic << " " << instr.op_str << std::endl;
     }
-    std::cout << std::endl;
 
     return 0;
 }
